@@ -1,0 +1,42 @@
+# ═══════════════════════════════════════════
+# TEAM NULL - SecureAuth .gitignore
+# ═══════════════════════════════════════════
+
+# ❌ NEVER UPLOAD THESE!
+.env
+.env.local
+.env.production
+
+# Node modules (too large, can be reinstalled)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+logs/
+*.log
+
+# Build files
+dist/
+build/
+
+# Test coverage
+coverage/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
