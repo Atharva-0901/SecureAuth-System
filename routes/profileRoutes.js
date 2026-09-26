@@ -1,8 +1,7 @@
 // ============================================
 // routes/profileRoutes.js — USER PROFILE ROUTES
 // ============================================
-// These routes are PROTECTED — only logged-in users can access them.
-// The `protect` middleware runs first and attaches req.user.
+
 
 const express = require('express');
 const router = express.Router();
@@ -12,13 +11,13 @@ const User = require('../models/User');
 // ─────────────────────────────────────────────
 // GET PROFILE
 // ─────────────────────────────────────────────
-// Returns the current user's info (password is already excluded by toJSON)
+
 router.get('/me', protect, async (req, res) => {
   res.json({
     success: true,
     data: {
       user: req.user.toJSON(),
-      // Include 2FA status flags (useful for frontend)
+
       twoFactorEnabled: req.user.twoFactorEnabled,
       isEmailVerified: req.user.isEmailVerified
     }
@@ -28,7 +27,7 @@ router.get('/me', protect, async (req, res) => {
 // ─────────────────────────────────────────────
 // UPDATE PROFILE
 // ─────────────────────────────────────────────
-// Only allows updating name (not email or password — those have their own flows)
+
 router.put('/me', protect, async (req, res) => {
   try {
     const { name } = req.body;
@@ -53,7 +52,7 @@ router.put('/me', protect, async (req, res) => {
 // ─────────────────────────────────────────────
 // DISABLE 2FA
 // ─────────────────────────────────────────────
-// Requires the user to enter their current password for security
+
 router.post('/2fa/disable', protect, async (req, res) => {
   try {
     const { password } = req.body;
@@ -62,7 +61,7 @@ router.post('/2fa/disable', protect, async (req, res) => {
       return res.status(400).json({ success: false, message: 'Password is required to disable 2FA' });
     }
 
-    // Re-fetch user WITH password (protect middleware excludes it)
+
     const user = await User.findById(req.user._id);
     const isMatch = await user.comparePassword(password);
 
