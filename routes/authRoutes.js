@@ -1,9 +1,7 @@
 // ============================================
 // routes/authRoutes.js — ALL AUTHENTICATION ROUTES
 // ============================================
-// This file defines WHAT URLs exist and WHAT happens when hit.
-// Route = URL path + HTTP method + handler function
-//
+
 // POST /api/auth/register     → Create account
 // POST /api/auth/login        → Log in
 // POST /api/auth/verify-otp   → Verify email OTP
@@ -36,7 +34,7 @@ const {
 // ─────────────────────────────────────────────
 // REGISTER
 // ─────────────────────────────────────────────
-// What happens: User fills form → we create account → send OTP email
+
 router.post('/register', async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -47,7 +45,7 @@ router.post('/register', async (req, res) => {
     }
 
     // Password strength check
-    // Must have: 8+ chars, 1 uppercase, 1 lowercase, 1 number, 1 special char
+
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!passwordRegex.test(password)) {
       return res.status(400).json({
@@ -65,12 +63,12 @@ router.post('/register', async (req, res) => {
     // ── Create the user ──
     const user = new User({ name, email, password });
 
-    // ── Generate OTP and set expiry (10 minutes from now) ──
+    // ── Generate OTP and set expiry  ──
     const otp = generateOTP();
     user.emailOTP = otp;
     user.emailOTPExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 min
 
-    await user.save(); // This triggers the pre-save hook that hashes the password!
+    await user.save(); 
 
     // ── Send OTP via email ──
     await sendEmail({
@@ -165,10 +163,6 @@ router.post('/resend-otp', async (req, res) => {
 // ─────────────────────────────────────────────
 // LOGIN
 // ─────────────────────────────────────────────
-// What happens:
-//   1. Check credentials
-//   2. If 2FA enabled → return flag (frontend shows 2FA screen)
-//   3. If 2FA disabled → return tokens immediately
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -217,8 +211,7 @@ router.post('/login', async (req, res) => {
 
     // ── 2FA Check ──
     if (user.twoFactorEnabled) {
-      // Don't give tokens yet! User must verify 2FA first.
-      // We save a temporary token so we know WHO is trying to log in
+
       const tempToken = jwt.sign(
         { id: user._id, type: 'temp_2fa' },
         process.env.JWT_ACCESS_SECRET,
@@ -257,8 +250,7 @@ router.post('/login', async (req, res) => {
 // ─────────────────────────────────────────────
 // REFRESH TOKEN
 // ─────────────────────────────────────────────
-// When access token expires, frontend sends refresh token here
-// to get a NEW access token without logging in again
+
 router.post('/refresh', async (req, res) => {
   try {
     const { refreshToken } = req.body;
@@ -288,7 +280,7 @@ router.post('/refresh', async (req, res) => {
 // ─────────────────────────────────────────────
 // LOGOUT
 // ─────────────────────────────────────────────
-// We invalidate the refresh token in the DB
+
 router.post('/logout', protect, async (req, res) => {
   try {
     req.user.refreshToken = undefined;
@@ -302,14 +294,13 @@ router.post('/logout', protect, async (req, res) => {
 // ─────────────────────────────────────────────
 // FORGOT PASSWORD
 // ─────────────────────────────────────────────
-// Step 1 of password reset: Send a reset link via email
+
 router.post('/forgot-password', async (req, res) => {
   try {
     const { email } = req.body;
 
     const user = await User.findOne({ email });
-    // IMPORTANT SECURITY: Always return success even if email doesn't exist
-    // This prevents attackers from knowing which emails are registered
+
     if (!user) {
       return res.json({ success: true, message: 'If this email exists, you will receive a reset link.' });
     }
@@ -340,7 +331,7 @@ router.post('/forgot-password', async (req, res) => {
 // ─────────────────────────────────────────────
 // RESET PASSWORD
 // ─────────────────────────────────────────────
-// Step 2: User clicks the link and submits a new password
+
 router.post('/reset-password', async (req, res) => {
   try {
     const { token, email, password } = req.body;
@@ -368,7 +359,7 @@ router.post('/reset-password', async (req, res) => {
     }
 
     // Update password and clear reset fields
-    user.password = password; // pre-save hook will hash this!
+    user.password = password; 
     user.passwordResetToken = undefined;
     user.passwordResetExpiry = undefined;
     await user.save();
@@ -382,20 +373,20 @@ router.post('/reset-password', async (req, res) => {
 // ─────────────────────────────────────────────
 // 2FA SETUP (Generate QR Code)
 // ─────────────────────────────────────────────
-// Generates a secret + QR code for Google Authenticator
+
 router.post('/2fa/setup', protect, async (req, res) => {
   try {
     // Generate a random secret
     const secret = speakeasy.generateSecret({ length: 20 });
 
-    // Create a "provisioning URI" — this is what goes into the QR code
+    
     // Format: otpauth://totp/AppName:email?secret=SECRET&issuer=AppName
     const otpauth = `otpauth://totp/SecureAuth:${req.user.email}?secret=${secret.base32}&issuer=SecureAuth`;
 
     // Generate QR code as a base64 data URI (can be put directly in <img>)
     const qrCodeDataURI = await QRCode.toDataURL(otpauth);
 
-    // Store secret TEMPORARILY (not enabled yet until user verifies)
+    // Store secret TEMPORARILY 
     req.user.twoFactorSecret = secret.base32;
     await req.user.save();
 
