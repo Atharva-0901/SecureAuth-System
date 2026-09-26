@@ -1,20 +1,16 @@
 // ============================================
 // utils/helpers.js — REUSABLE HELPER FUNCTIONS
 // ============================================
-// These are small, reusable tools used across the project.
-// Think of them as utility functions in a toolbox.
+
 
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
-const crypto = require('crypto'); // Node.js built-in for random numbers
+const crypto = require('crypto'); 
 
 // ─────────────────────────────────────────────
 // 1. GENERATE JWT TOKENS
 // ─────────────────────────────────────────────
-// We use TWO tokens:
-//   - Access Token:  Short-lived (15 min). Used to access data.
-//   - Refresh Token: Long-lived (7 days). Used to GET a new Access Token.
-// This way, even if an Access Token is stolen, it expires quickly.
+
 
 const generateAccessToken = (userId) => {
   return jwt.sign(
@@ -35,8 +31,7 @@ const generateRefreshToken = (userId) => {
 // ─────────────────────────────────────────────
 // 2. GENERATE A RANDOM 6-DIGIT OTP
 // ─────────────────────────────────────────────
-// crypto.randomInt() gives a cryptographically secure random number
-// This is MUCH better than Math.random() for security!
+
 const generateOTP = () => {
   return crypto.randomInt(100000, 999999).toString();
 };
@@ -44,15 +39,14 @@ const generateOTP = () => {
 // ─────────────────────────────────────────────
 // 3. SEND EMAIL USING NODEMAILER
 // ─────────────────────────────────────────────
-// Nodemailer lets us send real emails from Node.js
-// We configure it with Gmail credentials (from .env)
+
 
 const sendEmail = async ({ to, subject, html }) => {
-  // Create a "transporter" — this is the email sender
+
   const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 587,
-    secure: false,                  // Use TLS (not SSL)
+    secure: false,                  // Use TLS
     auth: {
       user: process.env.EMAIL_USER, // Your Gmail address
       pass: process.env.EMAIL_PASS  // Your App Password
@@ -71,7 +65,6 @@ const sendEmail = async ({ to, subject, html }) => {
 // ─────────────────────────────────────────────
 // 4. EMAIL TEMPLATES
 // ─────────────────────────────────────────────
-// These return styled HTML strings for our emails
 
 const otpEmailTemplate = (otp) => `
   <div style="font-family: 'Segoe UI', sans-serif; max-width: 480px; margin: 0 auto; background: #0f172a; color: #e2e8f0; padding: 40px 32px; border-radius: 16px; border: 1px solid #1e293b;">
